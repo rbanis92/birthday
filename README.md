@@ -26,9 +26,13 @@ Any static server works. From this folder:
 py -3 -m http.server 8765
 ```
 
-then open <http://127.0.0.1:8765/>. Opening `index.html` as a file:// works for
-everything except the photos, because browsers block `fetch` of the manifest on
-`file://` — so use the server to see it as she will.
+then open <http://127.0.0.1:8765/>.
+
+Or just double-click `index.html` — it works that way too, photos and all. The
+photo list is emitted as a `<script>` (`photos/web/photos.js`) rather than fetched
+as JSON, because a browser blocks `fetch` of a local file on `file://` but allows
+a plain script. That matters: if you ever hand her the folder instead of a link,
+nothing is missing.
 
 To preview as a phone, open DevTools → toggle device toolbar → pick a phone.
 
@@ -117,6 +121,7 @@ noisy, possibly on an old phone.
 ```
 index.html              the whole experience
 photos/                 originals (not published) + web/ derivatives (published)
+photos/web/photos.js    the photo list the page loads (generated)
 tools/prepare_photos.py the crop-and-compress pipeline
 .nojekyll               tells GitHub Pages to serve files untouched
 robots.txt              keep it out of search engines
