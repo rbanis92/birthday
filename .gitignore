@@ -1,5 +1,6 @@
 photos/*
 !photos/web/
+.shots/
 *.tmp
 .DS_Store
 Thumbs.db
