@@ -35,29 +35,39 @@ SRC = ROOT / "photos"
 OUT = SRC / "web"
 SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".bmp", ".tif", ".tiff"}
 
-# (name, width, height, quality) — each matches the exact aspect ratio of the
-# box it lands in, so the browser never crops a second time. Widths are sized
-# for a 390pt phone at DPR 3 (a ~983px box), which is as sharp as any phone can
-# show; the whole set is still under 1.5 MB because these are WebP at q~78.
+# (name, width, height, quality)
+#
+# These are 3:4 crops, and that shape is the whole point. The source photos are
+# portrait (3:4, and a couple even taller). Cropping a portrait photo to a
+# LANDSCAPE window throws away half its height — the frame lands on foreheads,
+# leaving empty space above the head and cutting the chest off entirely. No
+# focus point can rescue a crop that shape.
+#
+# 3:4 matches the photos, so nothing is lost vertically: heads sit near the top
+# of the frame and the body reads down to the chest. One crop serves both the
+# scratch card and the reason cards; the card shows the top square of it, which
+# is where the faces are.
 VARIANTS = {
-    "panel": (1000, 750, 80),  # 4:3  — the scratch card's photo
-    "band":  (980, 653, 78),   # 3:2  — the strip across a reason card
+    "photo": (900, 1200, 80),   # 3:4 portrait
 }
 BLUR_W = 12
 
-# focal point per source filename, as a fraction of width/height.
-# x is almost always centred; y is where the faces sit.
+# Focal point per source filename, as a fraction of width/height, meaning where
+# the CENTRE of the crop window sits. Because a 3:4 crop of a 3:4 photo keeps
+# the full frame, y is mostly moot for the common case; these values only pull
+# the window for the two photos that are notably taller than 3:4 (photo 3) or
+# where the subjects sit low in frame.
 FOCUS = {
-    "IMG_20250828_130619.jpg": (0.52, 0.22),
-    "IMG_20251105_105919.jpg": (0.52, 0.26),
-    "IMG_20251105_110410681_HDR_AE.jpg": (0.50, 0.24),
-    "IMG_20260323_124350.jpg": (0.52, 0.24),
-    "IMG_20260418_200730.jpg": (0.48, 0.40),
-    "IMG_20260526_200617.jpg": (0.54, 0.42),
-    "IMG_20260618_114329.jpg": (0.52, 0.28),
-    "IMG_20260826_153227.jpg": (0.50, 0.26),
+    "IMG_20250828_130619.jpg": (0.50, 0.50),
+    "IMG_20251105_105919.jpg": (0.50, 0.44),
+    "IMG_20251105_110410681_HDR_AE.jpg": (0.50, 0.30),
+    "IMG_20260323_124350.jpg": (0.50, 0.44),
+    "IMG_20260418_200730.jpg": (0.50, 0.52),
+    "IMG_20260526_200617.jpg": (0.50, 0.55),
+    "IMG_20260618_114329.jpg": (0.50, 0.46),
+    "IMG_20260826_153227.jpg": (0.50, 0.44),
 }
-DEFAULT_FOCUS = (0.50, 0.30)
+DEFAULT_FOCUS = (0.50, 0.45)
 
 
 def load_heif_support():
@@ -100,8 +110,10 @@ def build_one(src: pathlib.Path, index: int):
             (OUT / fname).write_bytes(data)
             made[name] = {"file": fname, "w": vw, "h": vh, "bytes": len(data)}
 
-        # a whisper of a placeholder: 12px wide, inline, ~300 bytes
-        blur = fit(im, (BLUR_W, round(BLUR_W * 3 / 2)), (fx, fy))
+        # a whisper of a placeholder: 12px wide, inline, ~300 bytes.
+        # Same shape as the real crop, so it blurs in without a jump.
+        bw, bh, _ = next(iter(VARIANTS.values()))
+        blur = fit(im, (BLUR_W, max(1, round(BLUR_W * bh / bw))), (fx, fy))
         blur = blur.filter(ImageFilter.GaussianBlur(1.1))
         tiny = encode(blur, 40)
         made["blur"] = {

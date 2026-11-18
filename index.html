@@ -412,11 +412,12 @@ html[data-mood="dusk"] .hero-copy h1{text-shadow:0 0 28px var(--glow)}
 }
 /* the photo keeps the top, uncropped by text */
 .scratch-photo{
-  position:relative;flex:0 0 56%;
+  position:relative;flex:0 0 62%;
   background:
     radial-gradient(120% 90% at 50% 12%, rgba(255,220,170,.5) 0%, transparent 62%),
     linear-gradient(155deg,#D9C7A6 0%,#BFA47C 45%,#9E8259 100%);
-  background-size:cover;background-position:center;
+  background-size:cover;
+  background-position:center 20%;
 }
 /* a permanent dark caption strip: legible in every mood, moods included */
 .scratch-note{
@@ -482,9 +483,11 @@ html[data-mood="dusk"] .hero-copy h1{text-shadow:0 0 28px var(--glow)}
   -webkit-user-select:none;user-select:none;
 }
 .card-photo{
-  position:relative;flex:0 0 auto;aspect-ratio:3/2;
+  position:relative;flex:0 0 auto;aspect-ratio:1/1;
   background:linear-gradient(155deg,#D9C7A6,#B69A72);
-  background-size:cover;background-position:center top;
+  background-size:cover;
+  /* the crop is portrait; show from the heads down through the chest */
+  background-position:center 22%;
   transition:background-image .4s linear;
 }
 .card-photo::after{
@@ -1552,7 +1555,7 @@ html[data-mood="dusk"] .hero-copy h1{text-shadow:0 0 28px var(--glow)}
     if (!photos?.length) return;
 
     const pick = i => photos[i % photos.length];
-    const file = (ph, kind) => `photos/web/${ph.variants[kind].file}`;
+    const file = ph => `photos/web/${ph.variants.photo.file}`;
     const PLACEHOLDER = ph => ph.variants.blur.uri;
 
     /* the scratch card: the hero photo.
@@ -1564,8 +1567,8 @@ html[data-mood="dusk"] .hero-copy h1{text-shadow:0 0 28px var(--glow)}
 
     const full = new Image();
     full.decoding = "async";
-    full.onload = () => { heroEl.style.backgroundImage = `url("${file(hero, "panel")}")`; };
-    full.src = file(hero, "panel");
+    full.onload = () => { heroEl.style.backgroundImage = `url("${file(hero)}")`; };
+    full.src = file(hero);
 
     /* the reason cards: held back until the deck is near the viewport,
        so the photos never compete with the hero on a slow connection */
@@ -1580,8 +1583,8 @@ html[data-mood="dusk"] .hero-copy h1{text-shadow:0 0 28px var(--glow)}
         box.setAttribute("aria-label", "A photo of us");
         const img = new Image();
         img.decoding = "async";
-        img.onload = () => { box.style.backgroundImage = `url("${file(ph, "band")}")`; };
-        img.src = file(ph, "band");
+        img.onload = () => { box.style.backgroundImage = `url("${file(ph)}")`; };
+        img.src = file(ph);
       });
     }
 
