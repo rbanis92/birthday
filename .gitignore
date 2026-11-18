@@ -1,0 +1,5 @@
+photos/*
+!photos/web/
+*.tmp
+.DS_Store
+Thumbs.db
